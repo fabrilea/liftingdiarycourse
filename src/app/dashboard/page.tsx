@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { format } from 'date-fns'
 import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { getWorkoutsForUserByDate } from '@/data/workouts'
 import DatePicker from './DatePicker'
 import {
@@ -11,6 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import {
   Table,
@@ -38,18 +40,33 @@ async function WorkoutList({ userId, date }: { userId: string; date: string }) {
 
   if (results.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground italic">
-        No workouts logged for this date.
-      </p>
+      <div className="flex flex-col items-start gap-4">
+        <p className="text-sm text-muted-foreground italic">
+          No workouts logged for this date.
+        </p>
+        <Button asChild size="sm">
+          <Link href={`/dashboard/workout/new?date=${date}`}>
+            + New workout
+          </Link>
+        </Button>
+      </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {results.map((workout) => (
         <div key={workout.id}>
+          {/* Workout header with time */}
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-base">{workout.name}</h3>
+            <div className="flex items-center gap-3">
+              <h3 className="font-semibold text-base">{workout.name}</h3>
+              {workout.startedAt && (
+                <span className="text-xs text-muted-foreground font-medium tabular-nums">
+                  {format(new Date(workout.startedAt), 'HH:mm')}
+                </span>
+              )}
+            </div>
             <Badge variant="secondary">
               {workout.workoutExercises.length}{' '}
               {workout.workoutExercises.length === 1 ? 'exercise' : 'exercises'}
@@ -140,7 +157,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 
           {/* Right panel: Workout detail */}
           <div className="flex-1 flex flex-col p-6 gap-4 overflow-y-auto">
-            <div className="flex items-baseline justify-between">
+            <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
                 Workouts
               </h2>
