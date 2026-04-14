@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 @AGENTS.md
 
 - /docs/ui.md
+- /docs/data-fetching.md
 
 ## CRITICAL: Always reference /docs before writing code
 

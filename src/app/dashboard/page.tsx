@@ -2,9 +2,7 @@ import { Suspense } from 'react'
 import { format } from 'date-fns'
 import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
-import { and, eq, gte, lt } from 'drizzle-orm'
-import { db } from '@/db'
-import { workouts } from '@/db/schema'
+import { getWorkoutsForUserByDate } from '@/data/workouts'
 import DatePicker from './DatePicker'
 import {
   Card,
@@ -36,92 +34,68 @@ function todayString() {
 }
 
 async function WorkoutList({ userId, date }: { userId: string; date: string }) {
-  const dayStart = new Date(`${date}T00:00:00`)
-  const dayEnd = new Date(`${date}T00:00:00`)
-  dayEnd.setDate(dayEnd.getDate() + 1)
-
-  const results = await db.query.workouts.findMany({
-    where: and(
-      eq(workouts.userId, userId),
-      gte(workouts.createdAt, dayStart),
-      lt(workouts.createdAt, dayEnd)
-    ),
-    with: {
-      workoutExercises: {
-        with: {
-          exercise: true,
-          sets: true,
-        },
-        orderBy: (we, { asc }) => [asc(we.order)],
-      },
-    },
-    orderBy: (w, { desc }) => [desc(w.createdAt)],
-  })
+  const results = await getWorkoutsForUserByDate(userId, date)
 
   if (results.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-muted-foreground italic">
         No workouts logged for this date.
       </p>
     )
   }
 
   return (
-    <ul className="space-y-4">
+    <div className="space-y-6">
       {results.map((workout) => (
-        <li key={workout.id}>
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>{workout.name}</CardTitle>
-                <Badge variant="secondary">
-                  {workout.workoutExercises.length}{' '}
-                  {workout.workoutExercises.length === 1 ? 'exercise' : 'exercises'}
-                </Badge>
-              </div>
-            </CardHeader>
+        <div key={workout.id}>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-base">{workout.name}</h3>
+            <Badge variant="secondary">
+              {workout.workoutExercises.length}{' '}
+              {workout.workoutExercises.length === 1 ? 'exercise' : 'exercises'}
+            </Badge>
+          </div>
 
-            {workout.workoutExercises.length > 0 && (
-              <CardContent className="space-y-4">
-                {workout.workoutExercises.map((we, idx) => (
-                  <div key={we.id}>
-                    {idx > 0 && <Separator className="mb-4" />}
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="font-medium text-sm">{we.exercise.name}</span>
-                      <Badge variant="outline" className="text-xs">
-                        {we.sets.length} {we.sets.length === 1 ? 'set' : 'sets'}
-                      </Badge>
-                    </div>
-                    {we.sets.length > 0 && (
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead className="w-16">Set</TableHead>
-                            <TableHead className="w-16">Reps</TableHead>
-                            <TableHead>Weight (kg)</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {we.sets
-                            .sort((a, b) => a.setNumber - b.setNumber)
-                            .map((s) => (
-                              <TableRow key={s.id}>
-                                <TableCell>{s.setNumber}</TableCell>
-                                <TableCell>{s.reps}</TableCell>
-                                <TableCell>{s.weightKg ?? '—'}</TableCell>
-                              </TableRow>
-                            ))}
-                        </TableBody>
-                      </Table>
-                    )}
+          {workout.workoutExercises.length > 0 && (
+            <div className="space-y-4">
+              {workout.workoutExercises.map((we, idx) => (
+                <div key={we.id}>
+                  {idx > 0 && <Separator className="mb-4" />}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="font-medium text-sm">{we.exercise.name}</span>
+                    <Badge variant="outline" className="text-xs">
+                      {we.sets.length} {we.sets.length === 1 ? 'set' : 'sets'}
+                    </Badge>
                   </div>
-                ))}
-              </CardContent>
-            )}
-          </Card>
-        </li>
+                  {we.sets.length > 0 && (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-16">Set</TableHead>
+                          <TableHead className="w-16">Reps</TableHead>
+                          <TableHead>Weight (kg)</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {we.sets
+                          .sort((a, b) => a.setNumber - b.setNumber)
+                          .map((s) => (
+                            <TableRow key={s.id}>
+                              <TableCell>{s.setNumber}</TableCell>
+                              <TableCell>{s.reps}</TableCell>
+                              <TableCell>{s.weightKg ?? '—'}</TableCell>
+                            </TableRow>
+                          ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       ))}
-    </ul>
+    </div>
   )
 }
 
@@ -135,21 +109,53 @@ export default async function DashboardPage({ searchParams }: Props) {
   const formattedDate = format(new Date(`${date}T00:00:00`), 'do MMM yyyy')
 
   return (
-    <main className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-8">Dashboard</h1>
+    <div className="min-h-screen bg-muted/40 flex items-start justify-center p-8">
+      {/* Desktop window chrome */}
+      <div className="w-full max-w-5xl rounded-xl border bg-background shadow-2xl overflow-hidden">
 
-      <Suspense>
-        <DatePicker value={date} />
-      </Suspense>
+        {/* Title bar */}
+        <div className="flex items-center gap-2 px-4 py-3 bg-muted border-b">
+          <div className="flex gap-1.5">
+            <span className="w-3 h-3 rounded-full bg-red-400" />
+            <span className="w-3 h-3 rounded-full bg-yellow-400" />
+            <span className="w-3 h-3 rounded-full bg-green-400" />
+          </div>
+          <span className="flex-1 text-center text-sm font-medium text-muted-foreground">
+            Lifting Diary — Dashboard
+          </span>
+        </div>
 
-      <Separator className="my-8" />
+        {/* Window body: two-column layout */}
+        <div className="flex divide-x min-h-[600px]">
 
-      <section>
-        <h2 className="text-lg font-semibold mb-4">{formattedDate}</h2>
-        <Suspense fallback={<p className="text-sm text-muted-foreground">Loading workouts…</p>}>
-          <WorkoutList userId={userId} date={date} />
-        </Suspense>
-      </section>
-    </main>
+          {/* Left panel: Calendar */}
+          <div className="flex flex-col p-6 gap-4 shrink-0">
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+              Calendar
+            </h2>
+            <Suspense>
+              <DatePicker value={date} />
+            </Suspense>
+          </div>
+
+          {/* Right panel: Workout detail */}
+          <div className="flex-1 flex flex-col p-6 gap-4 overflow-y-auto">
+            <div className="flex items-baseline justify-between">
+              <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+                Workouts
+              </h2>
+              <span className="text-sm font-medium">{formattedDate}</span>
+            </div>
+
+            <Separator />
+
+            <Suspense fallback={<p className="text-sm text-muted-foreground">Loading workouts…</p>}>
+              <WorkoutList userId={userId} date={date} />
+            </Suspense>
+          </div>
+
+        </div>
+      </div>
+    </div>
   )
 }
