@@ -28,7 +28,8 @@
       "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const i=JSON.parse\\(d\\);const f=\\(i.tool_input&&i.tool_input.file_path\\)||'';const m=f.match\\(/[/\\\\\\\\\\\\\\\\]docs[/\\\\\\\\\\\\\\\\]\\([^/\\\\\\\\\\\\\\\\]+[.]md\\)$|^docs[/\\\\\\\\\\\\\\\\]\\([^/\\\\\\\\\\\\\\\\]+[.]md\\)$/\\);console.log\\('file:',f,'match:',m&&\\(m[1]||m[2]\\)\\);}\\)\")",
       "Bash(node .claude/hooks/update-claude-md-docs.js)",
       "Bash(echo \"exit: $?\")",
-      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('.claude/settings.local.json','utf8'\\)\\); console.log\\('valid JSON'\\)\")"
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('.claude/settings.local.json','utf8'\\)\\); console.log\\('valid JSON'\\)\")",
+      "Bash(gh --version)"
     ]
   },
   "enableAllProjectMcpServers": true,
