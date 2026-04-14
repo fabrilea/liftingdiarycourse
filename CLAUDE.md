@@ -4,6 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 @AGENTS.md
 
+- /docs/ui.md
+- /docs/data-fetching.md
+- /docs/data-mutations.md
+- /docs/auth.md
+- /docs/routing.md
+
+## CRITICAL: Always reference /docs before writing code
+
+**Before generating any code**, you MUST first read the relevant documentation files in the `/docs` directory. This is a hard requirement — do not skip it, even for small changes.
+
+Steps:
+1. Check what files exist in `/docs`
+2. Read any files relevant to the feature, API, or library you are about to use
+3. Only then write code, using the docs as the authoritative source
+
 ## Commands
 
 ```bash

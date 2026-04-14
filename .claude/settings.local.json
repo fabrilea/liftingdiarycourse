@@ -10,11 +10,44 @@
       "Bash(npx drizzle-kit:*)",
       "Bash(npx dotenv:*)",
       "mcp__neon__describe_table_schema",
-      "mcp__neon__run_sql_transaction"
+      "mcp__neon__run_sql_transaction",
+      "Bash(npx shadcn@latest init -d)",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/next/package.json'\\).version\\)\")",
+      "Bash(npx shadcn@latest add calendar --yes)",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/react-day-picker/package.json'\\).version\\)\")",
+      "Bash(npx shadcn@latest add card badge --yes)",
+      "Bash(npx tsc:*)",
+      "Bash(npx shadcn@latest add table separator --yes)",
+      "Bash(npm run:*)",
+      "Bash(npx shadcn@latest add input label --yes)",
+      "Bash(npx shadcn@latest add popover --yes)",
+      "Skill(update-config)",
+      "Bash(bash -c ':*)",
+      "Bash(where jq:*)",
+      "Bash(node -e ':*)",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const i=JSON.parse\\(d\\);const f=\\(i.tool_input&&i.tool_input.file_path\\)||'';const m=f.match\\(/[/\\\\\\\\\\\\\\\\]docs[/\\\\\\\\\\\\\\\\]\\([^/\\\\\\\\\\\\\\\\]+[.]md\\)$|^docs[/\\\\\\\\\\\\\\\\]\\([^/\\\\\\\\\\\\\\\\]+[.]md\\)$/\\);console.log\\('file:',f,'match:',m&&\\(m[1]||m[2]\\)\\);}\\)\")",
+      "Bash(node .claude/hooks/update-claude-md-docs.js)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('.claude/settings.local.json','utf8'\\)\\); console.log\\('valid JSON'\\)\")",
+      "Bash(gh --version)"
     ]
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "neon"
-  ]
+  ],
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/update-claude-md-docs.js",
+            "statusMessage": "Checking if CLAUDE.md needs updating..."
+          }
+        ]
+      }
+    ]
+  }
 }
