@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { CalendarIcon } from 'lucide-react'
-import { createWorkout } from './actions'
+import { editWorkout } from './actions'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -17,7 +17,10 @@ import {
 import { cn } from '@/lib/utils'
 
 interface Props {
-  defaultDate: string // "YYYY-MM-DD"
+  workoutId: number
+  defaultName: string
+  defaultDate: string  // "YYYY-MM-DD"
+  defaultTime: string  // "HH:MM"
 }
 
 function toDateString(d: Date) {
@@ -27,19 +30,17 @@ function toDateString(d: Date) {
   return `${yyyy}-${mm}-${dd}`
 }
 
-function nowTimeString() {
-  const now = new Date()
-  const hh = String(now.getHours()).padStart(2, '0')
-  const min = String(now.getMinutes()).padStart(2, '0')
-  return `${hh}:${min}`
-}
-
-export default function NewWorkoutForm({ defaultDate }: Props) {
-  const [name, setName] = useState('')
+export default function EditWorkoutForm({
+  workoutId,
+  defaultName,
+  defaultDate,
+  defaultTime,
+}: Props) {
+  const [name, setName] = useState(defaultName)
   const [selectedDate, setSelectedDate] = useState<Date>(
     new Date(`${defaultDate}T00:00:00`)
   )
-  const [time, setTime] = useState(nowTimeString)
+  const [time, setTime] = useState(defaultTime)
   const [calendarOpen, setCalendarOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -49,7 +50,8 @@ export default function NewWorkoutForm({ defaultDate }: Props) {
     e.preventDefault()
     setError(null)
     startTransition(async () => {
-      const result = await createWorkout({
+      const result = await editWorkout({
+        workoutId,
         name,
         date: toDateString(selectedDate),
         time,
@@ -127,7 +129,7 @@ export default function NewWorkoutForm({ defaultDate }: Props) {
 
       <div className="flex gap-3">
         <Button type="submit" disabled={isPending}>
-          {isPending ? 'Creating…' : 'Create workout'}
+          {isPending ? 'Saving…' : 'Save changes'}
         </Button>
         <Button
           type="button"

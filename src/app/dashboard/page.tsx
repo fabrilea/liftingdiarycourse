@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import {
   Table,
@@ -44,11 +44,12 @@ async function WorkoutList({ userId, date }: { userId: string; date: string }) {
         <p className="text-sm text-muted-foreground italic">
           No workouts logged for this date.
         </p>
-        <Button asChild size="sm">
-          <Link href={`/dashboard/workout/new?date=${date}`}>
-            + New workout
-          </Link>
-        </Button>
+        <Link
+          href={`/dashboard/workout/new?date=${date}`}
+          className={buttonVariants({ size: 'sm' })}
+        >
+          + New workout
+        </Link>
       </div>
     )
   }

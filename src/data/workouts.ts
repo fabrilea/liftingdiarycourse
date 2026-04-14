@@ -11,6 +11,23 @@ export async function insertWorkout(data: {
   return result[0]
 }
 
+export async function getWorkoutById(workoutId: number, userId: string) {
+  return db.query.workouts.findFirst({
+    where: and(eq(workouts.id, workoutId), eq(workouts.userId, userId)),
+  })
+}
+
+export async function updateWorkout(
+  workoutId: number,
+  userId: string,
+  data: { name: string; startedAt: Date }
+) {
+  return db
+    .update(workouts)
+    .set({ name: data.name, startedAt: data.startedAt })
+    .where(and(eq(workouts.id, workoutId), eq(workouts.userId, userId)))
+}
+
 export async function getWorkoutsForUserByDate(userId: string, date: string) {
   const dayStart = new Date(`${date}T00:00:00`)
   const dayEnd = new Date(`${date}T00:00:00`)
