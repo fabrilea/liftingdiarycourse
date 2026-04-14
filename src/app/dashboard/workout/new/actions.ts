@@ -17,7 +17,7 @@ type CreateWorkoutInput = z.infer<typeof createWorkoutSchema>
 export async function createWorkout(input: CreateWorkoutInput) {
   const parsed = createWorkoutSchema.safeParse(input)
   if (!parsed.success) {
-    return { error: parsed.error.errors[0].message }
+    return { error: parsed.error.issues[0].message }
   }
 
   const { userId } = await auth()
